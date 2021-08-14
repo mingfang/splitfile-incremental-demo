@@ -10,6 +10,7 @@ sgr init
 SG_ENGINE=engine_2 sgr init
 SG_ENGINE=engine_2 sgr init $DESTINATION
 SG_ENGINE=engine_3 sgr init
+docker-compose --project-name splitgraph_example exec -T objectstorage mkdir /tmp/splitgraph
 
 # run
 for SOURCE in "history-1" "history-2"; do
@@ -30,17 +31,25 @@ for SOURCE in "history-1" "history-2"; do
   sgr log incremental
 
   echo "push to engine_2"
-  sgr push incremental --remote engine_2 $DESTINATION --upload-handler DB
+  sgr push incremental --remote engine_2 $DESTINATION
 #  SG_ENGINE=engine_2 sgr provenance $DESTINATION
 #  SG_ENGINE=engine_2 sgr sql -i $DESTINATION "select count(*) from rdu"
 
-  echo "checkout on engine_3 from engine_2"
+  echo "clone on engine_3 from engine_2"
   SG_ENGINE=engine_3 sgr clone -r engine_2 $DESTINATION
-  SG_ENGINE=engine_3 sgr checkout -l $DESTINATION:latest
   SG_ENGINE=engine_3 sgr provenance $DESTINATION
+
+  echo "checkout layered on engine_3 from engine_2"
+  SG_ENGINE=engine_3 sgr checkout -l $DESTINATION:latest
+  echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "explain select count(*) from rdu"`"
   echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "select count(*) from rdu"`"
 
-  echo "PostgREST `curl -I -H "Prefer: count=exact" http://localhost:8080/rdu | grep Range`"
+  echo "checkout on engine_3 from engine_2"
+  SG_ENGINE=engine_3 sgr checkout $DESTINATION:latest
+  echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "explain select count(*) from rdu"`"
+  echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "select count(*) from rdu"`"
+
+  echo "PostgREST `curl -s -I -H "Prefer: count=exact" http://localhost:8080/rdu | grep Range`"
 
   echo "clean up"
   sgr rm -y $SOURCE
