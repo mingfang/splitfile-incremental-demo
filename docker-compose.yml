@@ -1,0 +1,52 @@
+version: '3'
+services:
+  engine_1:
+    image: splitgraph/engine:${DOCKER_TAG-stable}
+    ports:
+      - '0.0.0.0:5432:5432'
+    environment:
+      - POSTGRES_USER=sgr
+      - POSTGRES_PASSWORD=supersecure
+      - POSTGRES_DB=splitgraph
+      - SG_LOGLEVEL=INFO
+      - SG_CONFIG_FILE=/.sgconfig
+    expose:
+      - 5432
+    # Need to mount this into the engine so that access credentials to
+    # the second engine are available to it
+    volumes:
+      - ${SG_CONFIG_FILE-./.sgconfig}:/.sgconfig
+
+  engine_2:
+    image: splitgraph/engine:${DOCKER_TAG-stable}
+    ports:
+      - '0.0.0.0:5431:5432'
+    environment:
+      - POSTGRES_USER=sgr
+      - POSTGRES_PASSWORD=supersecure
+      - POSTGRES_DB=splitgraph
+      - SG_LOGLEVEL=INFO
+      - SG_CONFIG_FILE=/.sgconfig
+      - SG_ENGINE_OBJECT_PATH=/var/lib/postgresql/data
+    expose:
+      - 5432
+    volumes:
+      - ./.sgconfig-engine_2:/.sgconfig
+
+  engine_3:
+    image: splitgraph/engine:${DOCKER_TAG-stable}
+    ports:
+      - '0.0.0.0:5433:5432'
+    environment:
+      - POSTGRES_USER=sgr
+      - POSTGRES_PASSWORD=supersecure
+      - POSTGRES_DB=splitgraph
+      - SG_LOGLEVEL=INFO
+      - SG_CONFIG_FILE=/.sgconfig
+      - SG_ENGINE_OBJECT_PATH=/var/lib/postgresql/data
+    expose:
+      - 5432
+    # Need to mount this into the engine so that access credentials to
+    # the second engine are available to it
+    volumes:
+      - ./.sgconfig-engine_3:/.sgconfig
