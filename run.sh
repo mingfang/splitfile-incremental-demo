@@ -36,8 +36,9 @@ for SOURCE in "history-1" "history-2"; do
 
   echo "clone from engine_2 to engine_3"
   SG_ENGINE=engine_3 sgr clone -r engine_2 $DESTINATION
+  SG_ENGINE=engine_3 sgr checkout -l $DESTINATION:latest
   SG_ENGINE=engine_3 sgr provenance $DESTINATION
-  SG_ENGINE=engine_3 sgr sql -i $DESTINATION "select count(*) from rdu"
+  SG_ENGINE=engine_3 sgr sql -s $DESTINATION "select count(*) from rdu"
 
   echo "clean up"
   sgr rm -y $SOURCE
