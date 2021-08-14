@@ -31,14 +31,16 @@ for SOURCE in "history-1" "history-2"; do
 
   echo "push to engine_2"
   sgr push incremental --remote engine_2 $DESTINATION --upload-handler DB
-  SG_ENGINE=engine_2 sgr provenance $DESTINATION
-  SG_ENGINE=engine_2 sgr sql -i $DESTINATION "select count(*) from rdu"
+#  SG_ENGINE=engine_2 sgr provenance $DESTINATION
+#  SG_ENGINE=engine_2 sgr sql -i $DESTINATION "select count(*) from rdu"
 
-  echo "clone from engine_2 to engine_3"
+  echo "checkout on engine_3 from engine_2"
   SG_ENGINE=engine_3 sgr clone -r engine_2 $DESTINATION
   SG_ENGINE=engine_3 sgr checkout -l $DESTINATION:latest
   SG_ENGINE=engine_3 sgr provenance $DESTINATION
-  SG_ENGINE=engine_3 sgr sql -s $DESTINATION "select count(*) from rdu"
+  echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "select count(*) from rdu"`"
+
+  echo "PostgREST `curl -I -H "Prefer: count=exact" http://localhost:8080/rdu | grep Range`"
 
   echo "clean up"
   sgr rm -y $SOURCE

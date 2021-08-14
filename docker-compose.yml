@@ -50,3 +50,13 @@ services:
     # the second engine are available to it
     volumes:
       - ./.sgconfig-engine_3:/.sgconfig
+
+  postgrest:
+    image: postgrest/postgrest:latest
+    command:
+      - postgrest
+      - /etc/postgrest.conf
+    ports:
+      - '0.0.0.0:8080:8080'
+    volumes:
+      - ./postgrest.conf:/etc/postgrest.conf
