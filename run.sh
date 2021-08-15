@@ -1,60 +1,84 @@
-# setup
-docker-compose --project-name splitgraph_example down -v --remove-orphans
-docker-compose --project-name splitgraph_example build
-docker-compose --project-name splitgraph_example up -d
+#!/bin/bash
+set -e
 
+SOURCE_DIR="./data"
+TABLE=rdu
+KEY=date
+SEPARATOR=";"
 DESTINATION=demo/weather
 
-# init
-sgr init
-SG_ENGINE=engine_2 sgr init
-SG_ENGINE=engine_2 sgr init $DESTINATION
-SG_ENGINE=engine_3 sgr init
-docker-compose --project-name splitgraph_example exec -T objectstorage mkdir /tmp/splitgraph
+setup() {
+  docker-compose --project-name splitgraph_example down -v --remove-orphans
+  docker-compose --project-name splitgraph_example build
+  docker-compose --project-name splitgraph_example up -d
+}
 
-# run
-for SOURCE in "history-1" "history-2"; do
-  echo ""
-  echo "import $SOURCE"
-  sgr init $SOURCE
-  sgr csv import -f rdu-weather-$SOURCE.csv \
-                     -k date \
-                     -t date timestamp \
-                     --separator ";" \
-                     $SOURCE rdu
-  sgr commit $SOURCE
+init() {
+  sgr init
+  SG_ENGINE=engine_2 sgr init
+  SG_ENGINE=engine_2 sgr init $DESTINATION
+  SG_ENGINE=engine_3 sgr init
+  docker-compose --project-name splitgraph_example exec -T objectstorage mkdir /tmp/splitgraph
+}
 
-  echo "build incremental splitfile"
-  sgr clone -r engine_2 $DESTINATION
-  sgr build incremental.splitfile -a SOURCE $SOURCE -a DESTINATION $DESTINATION -a TABLE rdu
-  sgr tag incremental $SOURCE
-  sgr log incremental
+run() {
+  for SOURCE_PATH in `ls $SOURCE_DIR/*.csv | sort`; do
+    SOURCE_IMAGE=$(basename $SOURCE_PATH | tr '.' '_')
+    if sgr tag -r engine_2 $DESTINATION:$SOURCE_IMAGE; then
+      echo "skipping $SOURCE_IMAGE"
+      continue
+    fi
 
-  echo "push to engine_2"
-  sgr push incremental --remote engine_2 $DESTINATION
-#  SG_ENGINE=engine_2 sgr provenance $DESTINATION
-#  SG_ENGINE=engine_2 sgr sql -i $DESTINATION "select count(*) from rdu"
+    echo ""
+    echo "import $SOURCE_PATH"
+    sgr init $SOURCE_IMAGE
+    sgr csv import -f $SOURCE_PATH \
+                   -k $KEY \
+                   --separator $SEPARATOR \
+                   $SOURCE_IMAGE $TABLE
+    sgr commit $SOURCE_IMAGE
 
-  echo "clone on engine_3 from engine_2"
-  SG_ENGINE=engine_3 sgr clone -r engine_2 $DESTINATION
-  SG_ENGINE=engine_3 sgr provenance $DESTINATION
+    echo "build incremental splitfile"
+    sgr clone -r engine_2 $DESTINATION
+    sgr build incremental.splitfile -a SOURCE $SOURCE_IMAGE -a DESTINATION $DESTINATION -a TABLE $TABLE -a KEY $KEY
+    sgr tag incremental $SOURCE_IMAGE
+    sgr log incremental
 
-  echo "checkout layered on engine_3 from engine_2"
-  SG_ENGINE=engine_3 sgr checkout -l $DESTINATION:latest
-  echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "explain select count(*) from rdu"`"
-  echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "select count(*) from rdu"`"
+    echo "push to engine_2"
+    sgr push incremental --remote engine_2 $DESTINATION
 
-  echo "checkout on engine_3 from engine_2"
-  SG_ENGINE=engine_3 sgr checkout $DESTINATION:latest
-  echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "explain select count(*) from rdu"`"
-  echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "select count(*) from rdu"`"
+    echo "clone on engine_3 from engine_2"
+    SG_ENGINE=engine_3 sgr clone -r engine_2 $DESTINATION
+    SG_ENGINE=engine_3 sgr provenance $DESTINATION
 
-  echo "PostgREST `curl -s -I -H "Prefer: count=exact" http://localhost:8080/rdu | grep Range`"
+    echo "checkout layered on engine_3 from engine_2"
+    SG_ENGINE=engine_3 sgr checkout -l $DESTINATION:latest
+#    echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "explain select count(*) from $TABLE"`"
+    echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "select count(*) from $TABLE"`"
 
-  echo "clean up"
-  sgr rm -y $SOURCE
-  sgr rm -y incremental
-done
+#    echo "checkout on engine_3 from engine_2"
+#    SG_ENGINE=engine_3 sgr checkout $DESTINATION:latest
+#    echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "explain select count(*) from $TABLE"`"
+#    echo "engine_3 `SG_ENGINE=engine_3 sgr sql -s $DESTINATION "select count(*) from $TABLE"`"
 
-# teardown
-docker-compose --project-name splitgraph_example down -v --remove-orphans
+    echo "PostgREST `curl -s -I -H "Prefer: count=exact" http://localhost:8080/$TABLE | grep Range`"
+
+    echo "clean up"
+    sgr rm -y $SOURCE_IMAGE
+    sgr rm -y incremental
+  done
+}
+
+teardown() {
+  docker-compose --project-name splitgraph_example down -v --remove-orphans
+}
+
+main() {
+  setup
+  init
+  run
+  run
+  teardown
+}
+
+main
