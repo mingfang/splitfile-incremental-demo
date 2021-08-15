@@ -1,5 +1,7 @@
 # Splitfile For Incremental Updates Across Multiple Splitgraph Engines and PostgREST
-
+```
+CSV -import-> Engine_1 -push-> Engine_2 -checkout-> Engine_3 -read-> PostgREST 
+```
 ## RUN
 ```shell
 ./run.sh 2> /dev/null
