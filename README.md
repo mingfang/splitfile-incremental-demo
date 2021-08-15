@@ -16,73 +16,58 @@ The second set of numbers, 4634, are from the sames set of engines but after the
 Waiting for connection....
 Initialized empty repository demo/weather
 
-import history-1
-Initialized empty repository history-1
-Committed history-1 as 3455822ae918.
+import ./data/rdu-weather-history-1.csv
+Initialized empty repository rdu-weather-history-1_csv
+Committed rdu-weather-history-1_csv as 9febabed940f.
 build incremental splitfile
-Executing Splitfile incremental.splitfile with arguments {'SOURCE': 'history-1', 'DESTINATION': 'demo/weather', 'TABLE': 'rdu'}
-Tagged incremental:c0752350bf707b1622a56dbaf2873e3197a8f889934d4ea279aaba360b24c30c with history-1.
-c0752350bf   [HEAD, history-1, latest]  2021-08-14 22:57:23  INSERT INTO rdu (        SELECT * FROM "history-1".rdu    )
-1f7e87467a                              2021-08-14 22:57:22  CREATE TABLE IF NOT EXISTS rdu    AS TABLE "history-1".rdu    WITH NO DATA
-0000000000                              2021-08-14 22:57:22
+Executing Splitfile incremental.splitfile with arguments {'SOURCE': 'rdu-weather-history-1_csv', 'DESTINATION': 'demo/weather', 'TABLE': 'rdu', 'KEY': 'date'}
+Tagged incremental:50e50a2c8949c81fbe81a0ed684507167db846afa7cb2e307933b209489c7bac with rdu-weather-history-1_csv.
+50e50a2c89   [HEAD, rdu-weather-history-1_csv, latest]  2021-08-15 21:37:08  INSERT INTO rdu (        SELECT * FROM "rdu-weather-history-1_csv".rdu    )
+228edebc09                                              2021-08-15 21:37:07  ALTER TABLE rdu DROP CONSTRAINT IF EXISTS rdu_pkey;    ALTER TABLE rdu AD...
+59bacb0993                                              2021-08-15 21:37:07  CREATE TABLE IF NOT EXISTS rdu    AS TABLE "rdu-weather-history-1_csv".rd...
+0000000000                                              2021-08-15 21:37:07
 push to engine_2
 Pushing incremental to demo/weather on remote engine_2
 clone on engine_3 from engine_2
-demo/weather:c0752350bf707b1622a56dbaf2873e3197a8f889934d4ea279aaba360b24c30c depends on:
+demo/weather:50e50a2c8949c81fbe81a0ed684507167db846afa7cb2e307933b209489c7bac depends on:
 demo/weather:0000000000000000000000000000000000000000000000000000000000000000
-history-1:3455822ae9186abca9c863ff04b6f2e6774035adf531d0f4d4123ee34bf4f900
+rdu-weather-history-1_csv:9febabed940f05e817e42031ec281d89ae451bc745fa7c28144b9ddf7a5e67cc
 checkout layered on engine_3 from engine_2
-Checked out demo/weather:c0752350bf70.
-engine_3 Aggregate  (cost=11.58..11.59 rows=1 width=8)
-->  Foreign Scan on rdu  (cost=20.00..0.00 rows=4633 width=0)
-Multicorn: Original Multicorn quals: []
-Multicorn: CNF quals: []
-Multicorn: Objects removed by filter: 0
-Multicorn: Scan through 1 object(s) (109.61 KiB)
-engine_3 4633
-checkout on engine_3 from engine_2
-Checked out demo/weather:c0752350bf70.
-engine_3 Aggregate  (cost=92.34..92.35 rows=1 width=8)
-->  Seq Scan on rdu  (cost=0.00..90.47 rows=747 width=0)
+Checked out demo/weather:50e50a2c8949.
 engine_3 4633
 PostgREST Content-Range: 0-4632/4633
 clean up
-Repository history-1 will be deleted.
+Repository rdu-weather-history-1_csv will be deleted.
 Repository incremental will be deleted.
 
-import history-2
-Initialized empty repository history-2
-Committed history-2 as 151e9193c939.
+import ./data/rdu-weather-history-2.csv
+Initialized empty repository rdu-weather-history-2_csv
+Committed rdu-weather-history-2_csv as f99448c07eb1.
 build incremental splitfile
-Executing Splitfile incremental.splitfile with arguments {'SOURCE': 'history-2', 'DESTINATION': 'demo/weather', 'TABLE': 'rdu'}
-Tagged incremental:0bd1be8f7645d16301b72b2ac3b302ac1ba530969501c617194b7d57c544c175 with history-2.
-0bd1be8f76   [HEAD, history-2, latest]  2021-08-14 22:57:34  INSERT INTO rdu (        SELECT * FROM "history-2".rdu    )
-3bffb151d9                              2021-08-14 22:57:34  CREATE TABLE IF NOT EXISTS rdu    AS TABLE "history-2".rdu    WITH NO DATA
-c0752350bf   [history-1]                2021-08-14 22:57:23  INSERT INTO rdu (        SELECT * FROM "history-1".rdu    )
-1f7e87467a                              2021-08-14 22:57:22  CREATE TABLE IF NOT EXISTS rdu    AS TABLE "history-1".rdu    WITH NO DATA
-0000000000                              2021-08-14 22:57:33
+Executing Splitfile incremental.splitfile with arguments {'SOURCE': 'rdu-weather-history-2_csv', 'DESTINATION': 'demo/weather', 'TABLE': 'rdu', 'KEY': 'date'}
+Tagged incremental:2e376a2fcf208a24d9093b7212a8f8ce947774da7247e4401b822e72f6e21649 with rdu-weather-history-2_csv.
+2e376a2fcf   [HEAD, rdu-weather-history-2_csv, latest]  2021-08-15 21:37:17  INSERT INTO rdu (        SELECT * FROM "rdu-weather-history-2_csv".rdu    )
+861102686f                                              2021-08-15 21:37:17  ALTER TABLE rdu DROP CONSTRAINT IF EXISTS rdu_pkey;    ALTER TABLE rdu AD...
+b916d9e391                                              2021-08-15 21:37:17  CREATE TABLE IF NOT EXISTS rdu    AS TABLE "rdu-weather-history-2_csv".rd...
+50e50a2c89   [rdu-weather-history-1_csv]                2021-08-15 21:37:08  INSERT INTO rdu (        SELECT * FROM "rdu-weather-history-1_csv".rdu    )
+228edebc09                                              2021-08-15 21:37:07  ALTER TABLE rdu DROP CONSTRAINT IF EXISTS rdu_pkey;    ALTER TABLE rdu AD...
+59bacb0993                                              2021-08-15 21:37:07  CREATE TABLE IF NOT EXISTS rdu    AS TABLE "rdu-weather-history-1_csv".rd...
+0000000000                                              2021-08-15 21:37:16
 push to engine_2
 Pushing incremental to demo/weather on remote engine_2
 clone on engine_3 from engine_2
-demo/weather:0bd1be8f7645d16301b72b2ac3b302ac1ba530969501c617194b7d57c544c175 depends on:
-history-2:151e9193c939b7e9167c22e3485ea2e2a337e0d2b0eed3d1e075b884672d5b35
-demo/weather:c0752350bf707b1622a56dbaf2873e3197a8f889934d4ea279aaba360b24c30c
+demo/weather:2e376a2fcf208a24d9093b7212a8f8ce947774da7247e4401b822e72f6e21649 depends on:
+rdu-weather-history-2_csv:f99448c07eb1ce8835c011a79bd4bc52cc28e253d0b2a533fe996a9b29febb4d
+demo/weather:50e50a2c8949c81fbe81a0ed684507167db846afa7cb2e307933b209489c7bac
 checkout layered on engine_3 from engine_2
-Checked out demo/weather:0bd1be8f7645.
-engine_3 Aggregate  (cost=11.59..11.60 rows=1 width=8)
-->  Foreign Scan on rdu  (cost=20.00..0.00 rows=4634 width=0)
-Multicorn: Original Multicorn quals: []
-Multicorn: CNF quals: []
-Multicorn: Objects removed by filter: 0
-Multicorn: Scan through 2 object(s) (111.93 KiB)
-engine_3 4634
-checkout on engine_3 from engine_2
-Checked out demo/weather:0bd1be8f7645.
-engine_3 Aggregate  (cost=92.34..92.35 rows=1 width=8)
-->  Seq Scan on rdu  (cost=0.00..90.47 rows=747 width=0)
+Checked out demo/weather:2e376a2fcf20.
 engine_3 4634
 PostgREST Content-Range: 0-4633/4634
 clean up
-Repository history-2 will be deleted.
+Repository rdu-weather-history-2_csv will be deleted.
 Repository incremental will be deleted.
+rdu-weather-history-1_csv
+skipping rdu-weather-history-1_csv
+rdu-weather-history-2_csv
+skipping rdu-weather-history-2_csv
 ```
