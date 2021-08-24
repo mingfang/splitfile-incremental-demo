@@ -22,26 +22,37 @@ init() {
 }
 
 run() {
-  for SOURCE_PATH in `ls $SOURCE_DIR/*.csv | sort`; do
-    SOURCE_IMAGE=$(basename $SOURCE_PATH | tr '.' '_')
-    if sgr tag -r engine_2 $DESTINATION:$SOURCE_IMAGE; then
+  for SOURCE_PATH in $(ls $SOURCE_DIR/*.csv | sort); do
+    SOURCE_IMAGE=$(basename "$SOURCE_PATH" | tr '.' '_')
+    if sgr tag -r engine_2 "$DESTINATION:$SOURCE_IMAGE"; then
       echo "skipping $SOURCE_IMAGE"
       continue
     fi
 
     echo ""
     echo "import $SOURCE_PATH"
-    sgr init $SOURCE_IMAGE
-    sgr csv import -f $SOURCE_PATH \
+    sgr init "$SOURCE_IMAGE"
+    sgr csv import -f "$SOURCE_PATH" \
                    -k $KEY \
                    --separator $SEPARATOR \
-                   $SOURCE_IMAGE $TABLE
-    sgr commit $SOURCE_IMAGE
+                   "$SOURCE_IMAGE" $TABLE
+    sgr commit "$SOURCE_IMAGE"
 
     echo "build incremental splitfile"
     sgr clone -r engine_2 $DESTINATION
-    sgr build incremental.splitfile -a SOURCE $SOURCE_IMAGE -a DESTINATION $DESTINATION -a TABLE $TABLE -a KEY $KEY
-    sgr tag incremental $SOURCE_IMAGE
+
+    # load any extra SQL matching this tag
+    if [ -f "$SOURCE_IMAGE.splitfile" ]; then
+      EXTRA_SQL=$(<"$SOURCE_IMAGE.splitfile")
+    fi
+
+    sgr build incremental.splitfile \
+        -a SOURCE "$SOURCE_IMAGE" \
+        -a DESTINATION "$DESTINATION" \
+        -a TABLE $TABLE \
+        -a KEY $KEY \
+        -a EXTRA_SQL "$EXTRA_SQL"
+    sgr tag incremental "$SOURCE_IMAGE"
     sgr log incremental
 
     echo "push to engine_2"
@@ -77,7 +88,7 @@ main() {
   setup
   init
   run
-  run
+#  run
   teardown
 }
 

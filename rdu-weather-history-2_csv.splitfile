@@ -1,0 +1,3 @@
+SQL {
+    ALTER TABLE rdu ADD COLUMN foo varchar(30)
+}
