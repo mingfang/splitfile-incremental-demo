@@ -38,19 +38,18 @@ run() {
                    "$SOURCE_IMAGE" $TABLE
     sgr commit "$SOURCE_IMAGE"
 
-    echo "build incremental splitfile"
-    sgr clone -r engine_2 $DESTINATION
-
     # load any extra SQL matching this tag
     if [ -f "$SOURCE_IMAGE.splitfile" ]; then
       EXTRA_SQL=$(<"$SOURCE_IMAGE.splitfile")
     fi
 
+    echo "build incremental splitfile"
+    SG_REPO_LOOKUP="engine_2" \
     sgr build incremental.splitfile \
         -a SOURCE "$SOURCE_IMAGE" \
         -a DESTINATION "$DESTINATION" \
-        -a TABLE $TABLE \
-        -a KEY $KEY \
+        -a TABLE "$TABLE" \
+        -a KEY "$KEY" \
         -a EXTRA_SQL "$EXTRA_SQL"
     sgr tag incremental "$SOURCE_IMAGE"
     sgr log incremental
@@ -75,7 +74,7 @@ run() {
     echo "PostgREST `curl -s -I -H "Prefer: count=exact" http://localhost:8080/$TABLE | grep Range`"
 
     echo "clean up"
-    sgr rm -y $SOURCE_IMAGE
+    sgr rm -y "$SOURCE_IMAGE"
     sgr rm -y incremental
   done
 }
